@@ -10,10 +10,7 @@ from kivy.core.window import Window
 
 import soco_wrapper as sw
 
-# Create both screens. Please note the root.manager.current: this is how
-# you can control the ScreenManager from kv. Each screen has by default a
-# property manager that gives you the instance of the ScreenManager used.
-
+prod = 0
 
 # Declare both screens
 class SpeakerScreen(Screen):
@@ -46,12 +43,7 @@ class SpeakerScreen(Screen):
             tbutton.bind(value=self.SpeakerVolume)
             layout.add_widget(tbutton)
             
-        #TODO Add temp buttons to change screens
-        tbutton = Button(text='Favorite',size_hint_x=0.2)
-        tbutton.bind(on_press=self.SwitchToFavorite)
-        layout.add_widget(tbutton)
         self.add_widget(layout)
-        #return self
 
     def SpeakerGroupToggle(self, event):
         sw.setSpeakerGroupStatus(sw.getSpeakerObject(int(event.id)))
@@ -63,7 +55,6 @@ class SpeakerScreen(Screen):
         sw.setSpeakerVolume(sw.getSpeakerObject(int(event.id)),int(event.value))
 
     def SwitchToFavorite(self, event):
-        print self.manager.current_screen.x
         self.manager.current = 'FavoriteScreen'
     
     
@@ -89,14 +80,33 @@ class SearchScreen(Screen):
 
 
 class SWC(App):
-
+    sm = ScreenManager()
     def build(self):
         # Create the screen manager
-        sm = ScreenManager()
-        sm.add_widget(SpeakerScreen(name='SpeakerScreen'))
-        sm.add_widget(FavoriteScreen(name='FavoriteScreen'))
-        sm.add_widget(SearchScreen(name='SearchScreen'))
-        return sm
+        #sm = ScreenManager()
+        self.sm.add_widget(SpeakerScreen(name='SpeakerScreen'))
+        self.sm.add_widget(FavoriteScreen(name='FavoriteScreen'))
+        self.sm.add_widget(SearchScreen(name='SearchScreen'))
+        if prod == 0:
+            #if not on a pi use keyboard
+            self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+            self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        return self.sm
+    
+    if prod == 0:
+        def _keyboard_closed(self):
+            print('My keyboard have been closed!')
+            self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+            self._keyboard = None
+            
+        def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+            if text == '1':
+                self.sm.current = 'SpeakerScreen'
+            elif text == '2':
+                self.sm.current = 'FavoriteScreen'
+            elif text == '3':
+                self.sm.current = 'SearchScreen'
+    
 
 if __name__ == '__main__':
     #Window.size = (320,240)
