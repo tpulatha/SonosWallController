@@ -10,7 +10,15 @@ from kivy.core.window import Window
 
 import soco_wrapper as sw
 
-prod = 0
+from os import uname
+
+if uname()[4].startswith("arm"):
+    raspPi = 1
+    import RPi.GPIO as GPIO
+else:
+    raspPi = 0
+
+print ("RASPPI DETECTION RESULT: " + str(raspPi))
 
 # Declare both screens
 class SpeakerScreen(Screen):
@@ -53,27 +61,35 @@ class SpeakerScreen(Screen):
     
     def SpeakerVolume(self, event,second):
         sw.setSpeakerVolume(sw.getSpeakerObject(int(event.id)),int(event.value))
-
-    def SwitchToFavorite(self, event):
-        self.manager.current = 'FavoriteScreen'
-    
     
     
 class FavoriteScreen(Screen):
     def __init__(self, **kwargs):
         super(FavoriteScreen, self).__init__(**kwargs)
-        layout = GridLayout(cols=3, row_default_height=40)
-        layout.add_widget(Label(text='favorite'))
-        #TODO Add temp buttons to change screens
-        tbutton = Button(text='Speaker')
-        tbutton.bind(on_press=self.SwitchToSpeaker)
-        layout.add_widget(tbutton)
+        layout = GridLayout(cols=3, size_hint_y=0.2)
+        stations = sw.getRadioFavorites()
+        for station in stations:
+            button = Button(text=station['title'][:10],id=str(sw.getRadioFavoriteID(station)), size_hint_x=0.2, font_size=40)
+            button.bind(on_press=self.SetRadioStation)
+            layout.add_widget(button)
+        button = Button(text='<<',id='back', size_hint_x=0.2, font_size=40)
+        button.bind(on_press=self.PlayPauseSkip)
+        layout.add_widget(button)
+        button = Button(text='>',id='playPause', size_hint_x=0.2, font_size=40)
+        button.bind(on_press=self.PlayPauseSkip)
+        layout.add_widget(button)
+        button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=40)
+        button.bind(on_press=self.PlayPauseSkip)
+        layout.add_widget(button)
         self.add_widget(layout)
-        
-    def SwitchToSpeaker(self, event):
-        self.manager.current = 'SpeakerScreen'
-    
 
+    def SetRadioStation(self, event):
+        station = sw.getRadioFavoriteObject(int(event.id))
+        sw.playRadio(station)   
+
+    def PlayPauseSkip(self, event):
+        pass      
+        
 class SearchScreen(Screen):
     pass
 
@@ -87,13 +103,48 @@ class SWC(App):
         self.sm.add_widget(SpeakerScreen(name='SpeakerScreen'))
         self.sm.add_widget(FavoriteScreen(name='FavoriteScreen'))
         self.sm.add_widget(SearchScreen(name='SearchScreen'))
-        if prod == 0:
+        if raspPi == 0:
             #if not on a pi use keyboard
             self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
             self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        #if a pi setup GPIO
+        if raspPi == 1:
+            GPIO.setmode(GPIO.BCM)
+            #input pins for pagescroll
+            GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(23, GPIO.FALLING, callback=self.ButtonPress, bouncetime=300)
+            GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(22, GPIO.FALLING, callback=self.ButtonPress, bouncetime=300)
+            GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(27, GPIO.FALLING, callback=self.ButtonPress, bouncetime=300)
+            GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(17, GPIO.FALLING, callback=self.ButtonPress, bouncetime=300)
+            #output for backlight
+            GPIO.setup(18, GPIO.OUT)
+            GPIO.output(18, True)
         return self.sm
     
-    if prod == 0:
+    def on_stop(self):
+        if raspPi == 1:
+            GPIO.cleanup()
+    
+
+        
+    if raspPi == 1:
+        def ButtonPress(self, channel):
+            if channel == 23:
+                self.sm.current = 'SpeakerScreen'
+            elif channel == 22:
+                self.sm.current = 'FavoriteScreen'
+            elif channel == 27:
+                self.sm.current = 'SearchScreen'
+            #set backlight off/on
+            elif channel == 17:
+                GPIO.output(18, not GPIO.input(18))
+            
+        
+    
+    if raspPi == 0:
         def _keyboard_closed(self):
             print('My keyboard have been closed!')
             self._keyboard.unbind(on_key_down=self._on_keyboard_down)
@@ -106,6 +157,7 @@ class SWC(App):
                 self.sm.current = 'FavoriteScreen'
             elif text == '3':
                 self.sm.current = 'SearchScreen'
+
     
 
 if __name__ == '__main__':
