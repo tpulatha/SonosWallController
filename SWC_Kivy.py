@@ -78,9 +78,9 @@ class FavoriteScreen(Screen):
         button = Button(text='<<',id='back', size_hint_x=0.2, font_size=70)
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
-        button = Button(text='>',id='playPause', size_hint_x=0.2, font_size=70)
+        button = Button(text='||',id='playPause', size_hint_x=0.2, font_size=70)
         if sw.getPlayPauseState() == 0:
-            button.text = "||"
+            button.text = ">"
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
         button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=70)
@@ -101,9 +101,9 @@ class FavoriteScreen(Screen):
         elif event.id == 'playPause':
             newState = sw.playPause()
             if newState == 0:
-                event.text = '||'
-            elif newState == 1:
                 event.text = '>'
+            elif newState == 1:
+                event.text = '||'
         elif event.id == 'forward':
             pass
         
