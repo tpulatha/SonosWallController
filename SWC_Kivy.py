@@ -72,16 +72,18 @@ class FavoriteScreen(Screen):
             button = Button(text=station['title'][:10],id=str(sw.getRadioFavoriteID(station)), size_hint_x=0.2, font_size=40)
             button.bind(on_press=self.SetRadioStation)
             layout.add_widget(button)
+        layout2 = GridLayout(cols=3, size_hint_y=0.2)
         button = Button(text='<<',id='back', size_hint_x=0.2, font_size=40)
         button.bind(on_press=self.PlayPauseSkip)
-        layout.add_widget(button)
+        layout2.add_widget(button)
         button = Button(text='>',id='playPause', size_hint_x=0.2, font_size=40)
         button.bind(on_press=self.PlayPauseSkip)
-        layout.add_widget(button)
+        layout2.add_widget(button)
         button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=40)
         button.bind(on_press=self.PlayPauseSkip)
-        layout.add_widget(button)
+        layout2.add_widget(button)
         self.add_widget(layout)
+        self.add_widget(layout2)
 
     def SetRadioStation(self, event):
         station = sw.getRadioFavoriteObject(int(event.id))
@@ -163,4 +165,8 @@ class SWC(App):
 if __name__ == '__main__':
     #Window.size = (320,240)
     #Window.fullscreen = True
-    SWC().run()
+    try:
+        SWC().run()
+    except KeyboardInterrupt:
+        print "Cleaning UP IO"
+        GPIO.cleanup()
