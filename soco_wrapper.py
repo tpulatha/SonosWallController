@@ -46,7 +46,7 @@ def getSpeakerObject(ID):
     return speakers[ID]
 
 def getGroups():
-    discoverAll()
+    #discoverAll()
     speakers = my_globals['Speakers']
     return speakers[0].all_groups
 
@@ -55,7 +55,7 @@ def getMainGroup():
     if type(my_globals['MainGroupUID']) == str:
         #print "locking into biggest group"
         mainGroupUID = my_globals['MainGroupUID']
-        discoverAll()
+        #discoverAll()
         speakers = list(my_globals['Speakers'])
         groups = getGroups()
         for group in groups:
@@ -183,7 +183,8 @@ def playRadio(RadioIn):
 
 def playPause():
     group = getMainGroup()
-    my_globals['somethingChange'] = True
+    #not needed
+    #my_globals['somethingChange'] = True
     if group.coordinator.get_current_transport_info()['current_transport_state'] == 'PLAYING':
         group.coordinator.stop()
         return 0
@@ -200,7 +201,8 @@ def getPlayPauseState():
         return 0
 
 def skipBack():
-    my_globals['somethingChange'] = True
+    #not needed
+#    my_globals['somethingChange'] = True
     group = getMainGroup()
     if int(group.coordinator.get_current_track_info()['position'].split(':')[2]) > 5:
         group.coordinator.seek('00:00:00')
@@ -213,3 +215,11 @@ def skipBack():
 def skipForward():
     group = getMainGroup()
     group.coordinator.next()
+    
+def getCurPlayingItem():
+    pass
+
+def getCurrentTitel():
+    group = getMainGroup()
+    return group.coordinator.get_current_track_info()['title']
+
