@@ -68,12 +68,18 @@ class FavoriteScreen(Screen):
     def __init__(self, **kwargs):
         super(FavoriteScreen, self).__init__(**kwargs)
         mainLayout = BoxLayout(orientation='vertical')
+        #add title
+        title = Label(text=sw.getCurrentTitel()[:40],font_size=40,size_hint_y=0.07,size_hint_x=1)
+        #title.text_size = title.size
+        #add favorites
         layout = GridLayout(cols=3, size_hint_y=0.2,anchor_y='top')
         stations = sw.getRadioFavorites()
         for station in stations:
             button = Button(text=station['title'][:10],id=str(sw.getRadioFavoriteID(station)), size_hint_x=0.2, font_size=40)
             button.bind(on_press=self.SetRadioStation)
             layout.add_widget(button)
+            
+        #add controls    
         layout2 = GridLayout(cols=3, size_hint_y=0.2, anchor_y='top')
         button = Button(text='<<',id='back', size_hint_x=0.2, font_size=70)
         button.bind(on_press=self.PlayPauseSkip)
@@ -86,7 +92,7 @@ class FavoriteScreen(Screen):
         button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=70)
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
-        
+        mainLayout.add_widget(title)
         mainLayout.add_widget(layout)
         mainLayout.add_widget(layout2)
         self.add_widget(mainLayout)

@@ -1,4 +1,5 @@
 import soco
+from xml.dom.minidom import parseString
 
 my_globals = { 'Speakers' : [], 'MainGroup': [] , 'MainGroupUID' : [] , 'RadioFavs' : [], 'somethingChange' : False}
 
@@ -106,7 +107,7 @@ def setSpeakerMute(SoCo, mute=None):
         speaker = getSpeakerObject(SoCo)
     else:
         speaker = SoCo
-    my_globals['somethingChange'] = True
+    #my_globals['somethingChange'] = True
     if mute is int:
         if speaker.mute == mute:
             return False
@@ -221,5 +222,10 @@ def getCurPlayingItem():
 
 def getCurrentTitel():
     group = getMainGroup()
+    #todo fix again
+    #metadata =  group.coordinator.get_current_track_info()['metadata']
+    #mdxml = parseString(metadata)
+    #for this in mdxml.getElementsByTagName("dc:title"):
+    #    return this.childNodes[0].data
     return group.coordinator.get_current_track_info()['title']
 
