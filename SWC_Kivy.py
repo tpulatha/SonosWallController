@@ -3,6 +3,7 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.slider import Slider
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -66,31 +67,45 @@ class SpeakerScreen(Screen):
 class FavoriteScreen(Screen):
     def __init__(self, **kwargs):
         super(FavoriteScreen, self).__init__(**kwargs)
-        layout = GridLayout(cols=3, size_hint_y=0.2)
+        mainLayout = BoxLayout(orientation='vertical')
+        layout = GridLayout(cols=3, size_hint_y=0.2,anchor_y='top')
         stations = sw.getRadioFavorites()
         for station in stations:
             button = Button(text=station['title'][:10],id=str(sw.getRadioFavoriteID(station)), size_hint_x=0.2, font_size=40)
             button.bind(on_press=self.SetRadioStation)
             layout.add_widget(button)
-        layout2 = GridLayout(cols=3, size_hint_y=0.2)
-        button = Button(text='<<',id='back', size_hint_x=0.2, font_size=40)
+        layout2 = GridLayout(cols=3, size_hint_y=0.2, anchor_y='top')
+        button = Button(text='<<',id='back', size_hint_x=0.2, font_size=70)
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
-        button = Button(text='>',id='playPause', size_hint_x=0.2, font_size=40)
+        button = Button(text='>',id='playPause', size_hint_x=0.2, font_size=70)
+        if sw.getPlayPauseState() == 0:
+            button.text = "||"
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
-        button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=40)
+        button = Button(text='>>',id='forward', size_hint_x=0.2, font_size=70)
         button.bind(on_press=self.PlayPauseSkip)
         layout2.add_widget(button)
-        self.add_widget(layout)
-        self.add_widget(layout2)
+        
+        mainLayout.add_widget(layout)
+        mainLayout.add_widget(layout2)
+        self.add_widget(mainLayout)
 
     def SetRadioStation(self, event):
         station = sw.getRadioFavoriteObject(int(event.id))
         sw.playRadio(station)   
 
     def PlayPauseSkip(self, event):
-        pass      
+        if event.id =='back':
+            pass
+        elif event.id == 'playPause':
+            newState = sw.playPause()
+            if newState == 0:
+                event.text = '||'
+            elif newState == 1:
+                event.text = '>'
+        elif event.id == 'forward':
+            pass
         
 class SearchScreen(Screen):
     pass
@@ -168,5 +183,6 @@ if __name__ == '__main__':
     try:
         SWC().run()
     except KeyboardInterrupt:
-        print "Cleaning UP IO"
-        GPIO.cleanup()
+        if raspPi == 1:
+            print "Cleaning UP IO"
+            GPIO.cleanup()

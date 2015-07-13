@@ -181,3 +181,20 @@ def playRadio(RadioIn):
     metadata = meta_template.format(title=RadioIn['title'], service=tunein_service)
     play_uri( uri, metadata)   
 
+def playPause():
+    group = getMainGroup()
+    my_globals['somethingChange'] = True
+    if group.coordinator.get_current_transport_info()['current_transport_state'] == 'PLAYING':
+        group.coordinator.stop()
+        return 0
+    else:
+        group.coordinator.play()
+        return 1
+    
+
+def getPlayPauseState():
+    group = getMainGroup()
+    if group.coordinator.get_current_transport_info()['current_transport_state'] == 'PLAYING':
+        return 1
+    else:
+        return 0
