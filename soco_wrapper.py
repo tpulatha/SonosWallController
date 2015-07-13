@@ -198,3 +198,18 @@ def getPlayPauseState():
         return 1
     else:
         return 0
+
+def skipBack():
+    my_globals['somethingChange'] = True
+    group = getMainGroup()
+    if int(group.coordinator.get_current_track_info()['position'].split(':')[2]) > 5:
+        group.coordinator.seek('00:00:00')
+    else:
+        try:
+            group.coordinator.previous()
+        except:
+            print "error"
+
+def skipForward():
+    group = getMainGroup()
+    group.coordinator.next()

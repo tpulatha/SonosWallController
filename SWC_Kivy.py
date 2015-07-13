@@ -97,7 +97,7 @@ class FavoriteScreen(Screen):
 
     def PlayPauseSkip(self, event):
         if event.id =='back':
-            pass
+            sw.skipBack()
         elif event.id == 'playPause':
             newState = sw.playPause()
             if newState == 0:
@@ -105,7 +105,7 @@ class FavoriteScreen(Screen):
             elif newState == 1:
                 event.text = '||'
         elif event.id == 'forward':
-            pass
+            sw.skipForward()
         
 class SearchScreen(Screen):
     pass
